@@ -1,0 +1,21 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "no",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "no"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "Jithu",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

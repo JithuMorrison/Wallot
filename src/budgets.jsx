@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import BudgetForm from '../components/BudgetForm';
-import BudgetList from '../components/BudgetList';
+import BudgetForm from './budgetform';
+import BudgetList from './budgetlist';
 
 const Budgets = ({ user }) => {
   const [budgets, setBudgets] = useState([]);

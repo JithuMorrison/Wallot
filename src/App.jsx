@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import AuthPage from './pages/AuthPage';
-import Dashboard from './pages/Dashboard';
-import Expenses from './pages/Expenses';
-import Budgets from './pages/Budgets';
-import Reports from './pages/Reports';
+import AuthPage from './auth';
+import Dashboard from './dash';
+import Expenses from './expense';
+import Budgets from './budgets';
+import Reports from './reports';
 import Navbar from './components/Navbar';
 
 axios.defaults.baseURL = 'http://localhost:5000/api';

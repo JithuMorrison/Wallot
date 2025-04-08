@@ -6,7 +6,7 @@ import Dashboard from './dash';
 import Expenses from './expense';
 import Budgets from './budgets';
 import Reports from './reports';
-import Navbar from './components/Navbar';
+import Navbar from './navbar';
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
 

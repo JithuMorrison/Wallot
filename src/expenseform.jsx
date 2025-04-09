@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const categories = [
   'Food', 'Transportation', 'Housing', 'Utilities', 
@@ -6,127 +6,365 @@ const categories = [
   'Other', 'Salary', 'Bonus', 'Investment', 'Gift'
 ];
 
-const ExpenseForm = ({ onSubmit }) => {
+const ExpenseForm = ({ onSubmit, type = 'expense' }) => {
   const [formData, setFormData] = useState({
     amount: '',
-    category: categories[0],
+    category: type === 'expense' ? 'Food' : 'Salary',
     description: '',
-    type: 'expense'
+    type: type
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      type: type,
+      category: type === 'expense' ? 'Food' : 'Salary'
+    }));
+  }, [type]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.amount || isNaN(formData.amount)) return;
     
-    onSubmit({
-      ...formData,
-      amount: parseFloat(formData.amount)
-    });
+    if (!formData.amount || isNaN(formData.amount)) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
     
-    // Reset form
-    setFormData({
-      amount: '',
-      category: categories[0],
-      description: '',
-      type: formData.type
-    });
+    setIsSubmitting(true);
+    
+    try {
+      await onSubmit({
+        ...formData,
+        amount: parseFloat(formData.amount)
+      });
+      
+      // Reset form
+      setFormData({
+        amount: '',
+        category: type === 'expense' ? 'Food' : 'Salary',
+        description: '',
+        type: type
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  // Add this to your HTML head for fonts:
+  // <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Add New Transaction</h2>
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: '16px',
+      padding: '2rem',
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.3)',
+      backdropFilter: 'blur(8px)',
+      fontFamily: "'Inter', sans-serif"
+    }}>
+      <h2 style={{
+        fontSize: '1.5rem',
+        fontWeight: '700',
+        color: '#1f2937',
+        marginBottom: '1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem'
+      }}>
+        {formData.type === 'expense' ? (
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="#ef4444"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        ) : (
+          <svg 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="#10b981"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        )}
+        Add Transaction
+      </h2>
+      
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-          <div className="flex space-x-4">
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="type"
-                value="expense"
-                checked={formData.type === 'expense'}
-                onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span className="ml-2 text-gray-700">Expense</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="type"
-                value="income"
-                checked={formData.type === 'income'}
-                onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span className="ml-2 text-gray-700">Income</span>
-            </label>
-          </div>
+        {/* Type Toggle */}
+        <div style={{
+          marginBottom: '1.5rem',
+          background: 'rgba(243, 244, 246, 0.7)',
+          borderRadius: '12px',
+          padding: '0.25rem',
+          display: 'inline-flex'
+        }}>
+          <button
+            type="button"
+            onClick={() => setFormData({...formData, type: 'expense', category: 'Food'})}
+            style={{
+              padding: '0.5rem 1.25rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: formData.type === 'expense' ? 'white' : 'transparent',
+              color: formData.type === 'expense' ? '#6366f1' : '#6b7280',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: formData.type === 'expense' ? '0 2px 8px rgba(99, 102, 241, 0.2)' : 'none',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+            </svg>
+            Expense
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData({...formData, type: 'income', category: 'Salary'})}
+            style={{
+              padding: '0.5rem 1.25rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: formData.type === 'income' ? 'white' : 'transparent',
+              color: formData.type === 'income' ? '#10b981' : '#6b7280',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: formData.type === 'income' ? '0 2px 8px rgba(16, 185, 129, 0.2)' : 'none',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            Income
+          </button>
         </div>
         
-        <div className="mb-4">
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Amount Field */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            color: '#6b7280',
+            marginBottom: '0.5rem'
+          }}>
             Amount
           </label>
-          <div className="relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
+          <div style={{
+            position: 'relative',
+            borderRadius: '10px',
+            boxShadow: shake ? '0 0 0 2px rgba(239, 68, 68, 0.3)' : 'none',
+            transition: 'box-shadow 0.3s ease'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: '1rem',
+              color: '#9ca3af',
+              fontWeight: '500'
+            }}>
+              $
             </div>
             <input
               type="text"
               name="amount"
-              id="amount"
               value={formData.amount}
               onChange={handleChange}
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+              style={{
+                width: '100%',
+                padding: '0.875rem 1rem 0.875rem 2.5rem',
+                borderRadius: '10px',
+                border: '1px solid #e5e7eb',
+                background: 'rgba(249, 250, 251, 0.7)',
+                fontSize: '1rem',
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: '500'
+              }}
               placeholder="0.00"
             />
           </div>
         </div>
         
-        <div className="mb-4">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Category Field */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            color: '#6b7280',
+            marginBottom: '0.5rem'
+          }}>
             Category
           </label>
-          <select
-            id="category"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
+          <div style={{
+            position: 'relative',
+            borderRadius: '10px'
+          }}>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              style={{
+                width: '100%',
+                padding: '0.875rem 1rem',
+                borderRadius: '10px',
+                border: '1px solid #e5e7eb',
+                background: 'rgba(249, 250, 251, 0.7)',
+                fontSize: '1rem',
+                appearance: 'none',
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              {categories
+                .filter(cat => 
+                  formData.type === 'expense' 
+                    ? !['Salary', 'Bonus', 'Investment', 'Gift'].includes(cat)
+                    : ['Salary', 'Bonus', 'Investment', 'Gift'].includes(cat)
+                )
+                .map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+            </select>
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              right: '1rem',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none'
+            }}>
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#6b7280">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7l3-3 3 3m0 6l-3 3-3-3" />
+              </svg>
+            </div>
+          </div>
         </div>
         
-        <div className="mb-4">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Description Field */}
+        <div style={{ marginBottom: '2rem' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            color: '#6b7280',
+            marginBottom: '0.5rem'
+          }}>
             Description (Optional)
           </label>
-          <input
-            type="text"
+          <textarea
             name="description"
-            id="description"
             value={formData.description}
             onChange={handleChange}
-            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+            style={{
+              width: '100%',
+              padding: '0.875rem 1rem',
+              borderRadius: '10px',
+              border: '1px solid #e5e7eb',
+              background: 'rgba(249, 250, 251, 0.7)',
+              fontSize: '1rem',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: '500',
+              minHeight: '80px',
+              resize: 'vertical'
+            }}
+            placeholder="Add any additional details..."
           />
         </div>
         
+        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          disabled={isSubmitting}
+          style={{
+            width: '100%',
+            padding: '1rem',
+            borderRadius: '10px',
+            border: 'none',
+            background: formData.type === 'expense' 
+              ? 'linear-gradient(90deg, #ef4444 0%, #f97316 100%)'
+              : 'linear-gradient(90deg, #10b981 0%, #3b82f6 100%)',
+            color: 'white',
+            fontWeight: '600',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+          }}
         >
-          Add Transaction
+          {isSubmitting ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}>
+              <div style={{
+                width: '16px',
+                height: '16px',
+                border: '2px solid rgba(255,255,255,0.3)',
+                borderTopColor: 'white',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              Processing...
+            </div>
+          ) : (
+            `Add ${formData.type === 'expense' ? 'Expense' : 'Income'}`
+          )}
         </button>
       </form>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
